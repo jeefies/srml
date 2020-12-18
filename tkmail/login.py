@@ -8,10 +8,22 @@ class Login(tk.Frame):
         self.master.title('MailBox')
         self.master.geometry('200x200+200+200')
 
+        self.check_auto_login()
+
         self.create_items()
 
+    def run_main(self):
+        pass
+
+    def check_auto_login(self):
+        log = config.mails.get('remember', '0')
+        if log == '1':
+            self.pack_forget()
+            self.run_main()
+
     def create_items(self):
-        ft = tk.Font(self, size=10, weight=tk.ttf.BOLD, name='ft')
+        ft = tk.Font(self, 'ft', size=10, weight=tk.ttf.BOLD)
+        btnft = tk.Font(self, 'remember', size= 1)
 
         tk.Label(self, text='Email', font='ft').grid(row=0, column=0)
         tk.Label(self, text='Password', font=ft).grid(row=2, column=0)
@@ -37,16 +49,17 @@ class Login(tk.Frame):
         vpwden.grid(row=5, column=0)
         self.vpwd = vpwd
 
-        chbtn = tk.Checkbutton(self, text='Checkbtn')
+        remember = tk.IntVar()
+        chbtn = tk.Checkbutton(self, text='Remeber Me', variable = remember, font=btnft)
         chbtn.grid(row=7, column=0)
-        self.chbtn = chbtn
+        self.rem = remember
 
         btn = tk.Button(self, command=self.prt, text='Submit')
         btn.grid(row=6, column=0)
 
     def prt(self, event = None):
         mail = self.mail.get()
-        print('btn:', self.chbtn.getboolean(self.chbtn))
+        print('remember:', self.rem.get())
         print('mail:', mail)
         pwd = self.pwd.get()
         vpwd = self.vpwd.get()
@@ -57,7 +70,8 @@ class Login(tk.Frame):
         else:
             mails = config.mails
             mails['email'] = mail
-            mails['password'] = pwd
-            mails['encrypt'] = 0
+            config.pwd(pwd)
+            mails['remember'] = str(self.rem.get())
             config.update()
             self.pack_forget()
+            self.run_mail()

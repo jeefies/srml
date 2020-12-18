@@ -1,8 +1,11 @@
 import sys
+import zlib
+import base64
 import os.path as opth
 from configparser import ConfigParser
 
-__all__ = ('config', 'mails', 'sites', 'concats', 'update')
+__all__ = ('config', 'mails', 'sites', 'concats',
+        'update', 'pwd', 'rpwd')
 
 confn = 'config.conf' if sys.platform.startswith('li') \
         else 'config.ini' if sys.platform.startswith('win') or sys.platfrom.endswith('win') \
@@ -28,7 +31,7 @@ mails = config['mails']
 sites = config['sites']
 concats = config['concats']
 
-mailsavs = ('email', 'password', 'encrypt')
+mailsavs = ('email', 'password', 'encrypt', 'remember')
 sitesavs = ('pop_host', 'pop_port', 'smtp_host',
             'smtp_port',  'imap_host', 'imap_prot')
 
@@ -40,3 +43,10 @@ for i in sitesavs:
     if i not in sites:
         sites[i] = ''
 update()
+
+def rpwd():
+    return zlib.decompress(base64.b64decode(mails['password'])).decode() if mails['encrypt'] == 'true' else mails['password']
+
+def pwd(pawd):
+    mails['password'] = base64.b64encode(zlib.compress(pawd.encode())).decode()
+    mails['encrypt'] = 'true'
