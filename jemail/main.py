@@ -52,7 +52,7 @@ class Main(tk.Frame):
         pass
 
     def concats(self):
-        pass
+        self.gls['ConcatConfig'](self.gls)
 
     def recved(self):
         pass
