@@ -1,8 +1,11 @@
+from srml import MailBox
+
 from . import tk
 from . import config
 
 class Login(tk.Frame):
-    def __init__(self):
+    def __init__(self, gls):
+        self.gls = gls
         super(Login, self).__init__(tk.root)
         self.pack()
         self.master.title('MailBox')
@@ -13,7 +16,8 @@ class Login(tk.Frame):
         self.create_items()
 
     def run_main(self):
-        pass
+        box = MailBox(mails = config._login())
+        self.gls['Main'](self.gls, box)
 
     def check_auto_login(self):
         log = config.mails.get('remember', '0')
@@ -43,12 +47,6 @@ class Login(tk.Frame):
         pwden.grid(row=3, column=0)
         self.pwd = pwd
         
-        vpwd = tk.StringVar()
-        vpwden = tk.Entry(self, show='*')
-        vpwden['textvariable'] = vpwd
-        vpwden.grid(row=5, column=0)
-        self.vpwd = vpwd
-
         remember = tk.IntVar()
         chbtn = tk.Checkbutton(self, text='Remeber Me', variable = remember, font=btnft)
         chbtn.grid(row=7, column=0)
@@ -62,16 +60,11 @@ class Login(tk.Frame):
         print('remember:', self.rem.get())
         print('mail:', mail)
         pwd = self.pwd.get()
-        vpwd = self.vpwd.get()
-        if pwd != vpwd or pwd == '':
-            tk.showwarning('PWD Error', 'Your password must be matched')
+        if (mail, pwd) != config._login():
+            tk.showwarning('PWD Error', 'Your password is wrong')
             self.pwd.set('')
-            self.vpwd.set('')
         else:
-            mails = config.mails
-            mails['email'] = mail
-            config.pwd(pwd)
-            mails['remember'] = str(self.rem.get())
+            config.mails['remember'] = str(self.rem.get())
             config.update()
             self.pack_forget()
-            self.run_mail()
+            self.run_main()

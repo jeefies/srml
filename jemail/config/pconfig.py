@@ -5,7 +5,7 @@ import os.path as opth
 from configparser import ConfigParser
 
 __all__ = ('config', 'mails', 'sites', 'concats',
-        'update', 'pwd', 'rpwd')
+        'update', 'pwd', 'rpwd', '_login')
 
 confn = 'config.conf' if sys.platform.startswith('li') \
         else 'config.ini' if sys.platform.startswith('win') or sys.platfrom.endswith('win') \
@@ -50,3 +50,6 @@ def rpwd():
 def pwd(pawd):
     mails['password'] = base64.b64encode(zlib.compress(pawd.encode())).decode()
     mails['encrypt'] = 'true'
+
+def _login():
+    return (mails['email'], rpwd())

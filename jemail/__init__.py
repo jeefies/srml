@@ -16,8 +16,10 @@ You can see it on github, also on pypi.
 """
 
 from .login import Login
+from .main import Main
 from .tk import root
+from .configs import UserConfig
 
 def _main():
-    log = Login()
+    log = Login(globals())
     root.mainloop()
