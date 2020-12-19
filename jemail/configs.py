@@ -6,8 +6,9 @@ from . import config
 def UserConfig(gls):
     chd = tk.Toplevel()
     mh, mw = chd.maxsize()
-    chd.geometry(f'300x200+{round(mh/3.5)}+{round(mw//3.5)}')
+    chd.geometry(f'320x200+{round(mh/3.5)}+{round(mw//3.5)}')
     _UserConfig(chd, gls).pack()
+    chd.mainloop()
 
 class _UserConfig(tk.Frame):
     def __init__(self, master, gls):
@@ -22,7 +23,7 @@ class _UserConfig(tk.Frame):
         # Email Entry
         email = tk.StringVar()
         email.set(mails['email'])
-        en = tk.Entry(self)
+        en = tk.Entry(self, width = 25)
         en['textvariable'] = email
         en.grid(row=0, column=1)
         self.email = email
@@ -35,17 +36,27 @@ class _UserConfig(tk.Frame):
         # pwd entry
         pwd = tk.StringVar()
         pwd.set(rpwd())
-        en = tk.Entry(self, cnf={'textvariable': pwd}, show='*').grid(row=2, column = 1)
+        pwden = tk.Entry(self, cnf={'textvariable': pwd}, show='*', width=25)
+        pwden.grid(row=2, column = 1)
         self.pwd = pwd
+
+        #tk.Label(self).grid(row=3)
+        
+        # show pwd
+        def change():
+            pwden['show'] = str() if pwden['show'] else '*'
+        tk.Button(self, text='Show pwd', command = change).grid(row=4)
+
+        tk.Label(self).grid(row=5)
 
         # submit
         btn = tk.Button(self, text = 'Submit', command=self.submit)
-        btn.grid(row=3, column=0)
+        btn.grid(row=6, column=0)
 
         # remember
         rem = tk.IntVar()
         cb = tk.Checkbutton(self, text='remember', variable=rem)
-        cb.grid(row=3, column=1)
+        cb.grid(row=6, column=1)
         nou = cb.select() if mails['remember'] == '1' else cb.deselect()
         self.rem = rem
 
@@ -66,6 +77,7 @@ class _UserConfig(tk.Frame):
         tk.Entry(top, cnf={'textvariable':vpwd}, show='*').grid(row=0)
         tk.Button(top, text='Submit', command = ver).grid(row=1)
         top.mainloop()
+        self.master.destroy()
 
     def _save(self):
         mails['email'] = self.email.get()

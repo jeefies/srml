@@ -17,7 +17,7 @@ class Login(tk.Frame):
 
     def run_main(self):
         box = MailBox(mails = config._login())
-        self.gls['Main'](self.gls, box)
+        self.gls['Main'](self.gls)
 
     def check_auto_login(self):
         log = config.mails.get('remember', '0')
@@ -57,12 +57,11 @@ class Login(tk.Frame):
 
     def prt(self, event = None):
         mail = self.mail.get()
-        print('remember:', self.rem.get())
-        print('mail:', mail)
         pwd = self.pwd.get()
-        if (mail, pwd) != config._login():
-            tk.showwarning('PWD Error', 'Your password is wrong')
-            self.pwd.set('')
+        if mail == '':
+            tk.showwarining('EMAIL Error', 'Your email is null')
+        elif pwd == '':
+            tk.showwarning('PWD Error', 'Your password is null')
         else:
             config.mails['remember'] = str(self.rem.get())
             config.update()
