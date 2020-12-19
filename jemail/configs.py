@@ -86,3 +86,77 @@ class _UserConfig(tk.Frame):
         self.master.destroy()
         config.update()
         return 0
+    
+def ConcatConfig(gls):
+    top = tk.Toplevel()
+    h, w = top.maxsize()
+    top.title('Concats config')
+    top.geometry(f'{h // 2}x{w // 2}+{h // 4}+{h // 4}')
+    _ConcatConfig(top, gls).pack()
+    top.mainloop()
+    
+class _ConcatConfig(tk.Frame):
+    def __init__(self, master, gls):
+        super().__init__(master)
+        self.gls = gls
+        self.crt_item()
+    
+    def crt_item(self):
+        tk.Button(self, text = 'Add', command = self.new).grid(row = 0)
+        ccs = config.concats
+        ad = 1
+        for i, c in enumerate(ccs):
+            info = c + ' : ' + css[c]
+            tk.Label(self, text = info).grid(row = i + ad, column=0)
+            tk.Button(self, text = 'modify', command = lambda : self.modify(c))\
+                .grid(row = i + ad, column = 1)
+            
+    def modify(self, c):
+        ccs = config.concats
+        def mod(name, email, top):
+            n, e = name.get(), email.get()
+            if not (n and e):
+                tk.showwarning('None content', \
+                              "Please don not enter nothing")
+                return 1
+            if n in ccs:
+                ccs[n] = e
+            else:
+                del ccs[c]
+                ccs[n] = e
+            config.update()
+            top.destroy()
+            tk.showinfo('Concat', 'Modify Success')
+        self._g(mod, c, css[c])
+    
+    def add(self):
+        ccs = config.concats
+        def add(name, email, top):
+            n, e = name.get(), email.get()
+            if n and e:
+                if e in ccs:
+                    tk.showwarning('Unique Name',\
+                                   'Concat name can not be the same, or use modify for it')
+                    return 1
+                ccs[n] = e
+            else:
+                tk.showwarning('NULL Content', 'Name and Email must not be nothing')
+                return 1
+            config.update()
+            top.destroy()
+            tk.showinfo('Concat', 'Add success')
+        self._g(add)
+            
+    def _g(self, cmd, valn = '', vale = ''):
+        top = tk.Toplevel()
+        name, email = tk.StringVar(), tk.StringVar()
+        name.set(valn)
+        email.set(vale)
+        tk.Label(top, text="Name").grid(row = 0)
+        tk.Entry(top, cnf={'textvariable': name}).grid(row = 1)
+        tk.Label(top, text = 'Email Address').grid(row = 2)
+        tk.Entry(top, cnf={'textvariable': email}).grid(row = 3)
+        tk.Button(top, text = 'ADD', command = lambda : cmd(name, email, top))\
+            .grid(row = 4)
+        top.mainloop()
+       
