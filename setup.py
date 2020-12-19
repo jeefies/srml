@@ -11,8 +11,8 @@ with open('requirements.txt') as f:
 setup(
         name = 'jsrml',
         author = 'Jeef',
-        version = '0.0.1',
-        packages = ['srml'],
+        version = '0.0.2',
+        packages = ['srml', 'jetkmail'],
         author_email = 'jeefy163@163.com',
         description = 'A module to send or recieve emails',
         maintainer = 'Jeef',

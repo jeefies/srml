@@ -69,5 +69,6 @@ use `help(MailBox)` for more details.
 ------------------
 ## srml.mailG
 the GUI version to use the email objects.  
+Use `python -m jemail` to show the GUI.  
 ## srml.mailCli
 The cli version to use the email objects.  
