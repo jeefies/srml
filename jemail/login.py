@@ -3,6 +3,8 @@ from srml import MailBox
 from . import tk
 from . import config
 
+__all__ = ('Login',)
+
 class Login(tk.Frame):
     def __init__(self, gls):
         self.gls = gls
@@ -16,7 +18,6 @@ class Login(tk.Frame):
         self.create_items()
 
     def run_main(self):
-        box = MailBox(mails = config._login())
         self.gls['Main'](self.gls)
 
     def check_auto_login(self):
@@ -65,5 +66,9 @@ class Login(tk.Frame):
         else:
             config.mails['remember'] = str(self.rem.get())
             config.update()
+            mails = config.mails
+            mails['password'] = pwd
+            mails['encrypt'] = 'false'
+            mails['email'] = mail
             self.pack_forget()
             self.run_main()

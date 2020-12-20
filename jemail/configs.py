@@ -2,6 +2,7 @@ from . import tk
 from .config import mails, rpwd
 from . import config
 
+__all__ = ('UserConfig', 'ConcatConfig')
 
 def UserConfig(gls):
     chd = tk.Toplevel()
@@ -95,6 +96,7 @@ def ConcatConfig(gls):
     _ConcatConfig(top, gls).pack()
     top.mainloop()
     
+
 class _ConcatConfig(tk.Frame):
     def __init__(self, master, gls):
         super().__init__(master)
@@ -102,53 +104,53 @@ class _ConcatConfig(tk.Frame):
         self.crt_item()
     
     def crt_item(self):
-        tk.Button(self, text = 'Add', command = self.new).grid(row = 0)
-        ccs = config.concats
-        ad = 1
-        for i, c in enumerate(ccs):
-            info = c + ' : ' + css[c]
-            tk.Label(self, text = info).grid(row = i + ad, column=0)
-            tk.Button(self, text = 'modify', command = lambda : self.modify(c))\
-                .grid(row = i + ad, column = 1)
+        btn = tk.Button(self, text = 'Add', command = self.new)
+        btn.pack(side = 'top')
+        self.ccf = _CCF(self)
+        self.ccf.pack(side="bottom", fill="both")
             
     def modify(self, c):
-        ccs = config.concats
+        ccs = config.Concats()
         def mod(name, email, top):
             n, e = name.get(), email.get()
             if not (n and e):
                 tk.showwarning('None content', \
-                              "Please don not enter nothing")
+                              "Please don not enter nothing",\
+                              parent=self)
                 return 1
-            if n in ccs:
-                ccs[n] = e
-            else:
-                del ccs[c]
-                ccs[n] = e
+            c1 = ccs[c]
+            c1.key = n
+            c1.val = e
             config.update()
+            self.ccf.iupdate()
             top.destroy()
-            tk.showinfo('Concat', 'Modify Success')
-        self._g(mod, c, css[c])
+            tk.showinfo('Concat', 'Modify Success', parent = self)
+        cc = ccs[c]
+        self._g(mod, cc.key, cc.val, 'Modify')
     
-    def add(self):
-        ccs = config.concats
+    def new(self):
+        ccs = config.Concats()
         def add(name, email, top):
             n, e = name.get(), email.get()
             if n and e:
                 if e in ccs:
                     tk.showwarning('Unique Name',\
-                                   'Concat name can not be the same, or use modify for it')
+                                   'Concat name can not be the same, or use modify for it',\
+                                   parent = self)
                     return 1
                 ccs[n] = e
             else:
-                tk.showwarning('NULL Content', 'Name and Email must not be nothing')
+                tk.showwarning('NULL Content', 'Name and Email must not be nothing',\
+                        parent = self)
                 return 1
             config.update()
             top.destroy()
-            tk.showinfo('Concat', 'Add success')
+            tk.showinfo('Concat', 'Add success', parent = self)
+            self.ccf.add()
         self._g(add)
             
-    def _g(self, cmd, valn = '', vale = ''):
-        top = tk.Toplevel()
+    def _g(self, cmd, valn = '', vale = '', mod = "ADD"):
+        top = tk.Toplevel(self.master)
         name, email = tk.StringVar(), tk.StringVar()
         name.set(valn)
         email.set(vale)
@@ -156,7 +158,52 @@ class _ConcatConfig(tk.Frame):
         tk.Entry(top, cnf={'textvariable': name}).grid(row = 1)
         tk.Label(top, text = 'Email Address').grid(row = 2)
         tk.Entry(top, cnf={'textvariable': email}).grid(row = 3)
-        tk.Button(top, text = 'ADD', command = lambda : cmd(name, email, top))\
+        tk.Button(top, text = mod, command = lambda : cmd(name, email, top))\
             .grid(row = 4)
         top.mainloop()
+        self.iupdate()
        
+    def iupdate(self):
+        #try:
+        #    self.ccf.init(self)
+        #except:
+        #    pass
+        #self.ccf = _CCF(self)
+        #self.ccf.pack(side="bottom", fill="both")
+        'self.ccf.update()'
+
+class _CCF(tk.Frame):
+    def __init__(self, master):
+        self.init(master)
+
+    def init(self, master= None):
+        super().__init__(master)
+        ccs = config.Concats()
+        def mod(i):
+            oc = ccs.place(i)
+            return lambda : master.modify(oc.key)
+        def delete(i):
+            oc = ccs.place(i)
+            return lambda : self.delete(oc)
+        for i, c in enumerate(ccs):
+            tk.Label(self, textvariable = c.var).grid(row = i, column=0)
+            tk.Button(self, text = 'modify', command = mod(i)).grid(row = i, column = 1)
+            tk.Button(self, text = 'delete', command = delete(i)).grid(row = i, column = 2)
+        self.i = i
+        self.mst = master
+        return self
+
+    def delete(self, c):
+        c.delete()
+        config.update()
+        self.iupdate()
+        tk.showinfo('Delete', "Delete Success", parent = self.master.master)
+
+    def iupdate(self):
+        self.pack_forget()
+        s = self.master
+        s.ccf = _CCF(s)
+        s.ccf.pack(fill='both', side='bottom')
+
+    def add(self):
+        self.iupdate()

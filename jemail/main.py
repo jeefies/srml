@@ -5,6 +5,9 @@ from srml.mailbox import AuthenticationError
 
 from . import tk, config
 
+
+__all__ = ('Main',)
+
 class Main(tk.Frame):
     def __init__(self, gls):
         super().__init__(tk.root)
@@ -80,6 +83,8 @@ class Main(tk.Frame):
             try:
                 self.box.login()
                 print('login success')
+                config.encrypt()
+                config.update()
             except AuthenticationError:
                 tk.showwarning('PWD Error', 'Not the right password, please use imap/smtp/pop password.')
                 config.mails['remember'] = '0'

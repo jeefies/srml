@@ -15,10 +15,10 @@ Url: https://github.com/jeefies/srml
 You can see it on github, also on pypi.
 """
 
-from .login import Login
-from .main import Main
+from .login import *
+from .main import *
 from .tk import root
-from .configs import UserConfig
+from .configs import *
 
 def _main():
     log = Login(globals())
