@@ -64,7 +64,7 @@ A class help to save the file.
 ---------------------------------
 ## MailBox
 **The mix class for all connection**  
-use `help(MailBox)` for more details.  
+use `help(MailBox)` or `MailBox.__init__.__doc__` for more details.  
 
 ------------------
 ## srml.mailG
