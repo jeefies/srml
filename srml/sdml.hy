@@ -1,6 +1,8 @@
 ;; Hy Lisp to send-mail
+;; hylang.org, pypi.org hy homepage
 (import logging time)
 (import os sys codecs smtplib [. [mime]])
+(import [.msgbase [MSG]])
 
 (import [email.utils [parseaddr formatdate formataddr make-msgid]]
 	[email.header [Header]]
@@ -26,7 +28,7 @@
 	(defn ana [e] (sanitize-address e encoding))
 	(return (gfor e addresses (ana e)))
 )
-
+;; flask_mail
 (defn sanitize-subject [subject &optional [encoding "utf-8"]]
 	(try (.encode subject "ascii")
 	(except [Exception] (try (setv subject (.encode (Header subject encoding)))
@@ -90,7 +92,7 @@
 	))
 )
 
-(defclass Message [object]
+(defclass Message [MSG]
 	(defn __init__ [self &optional	[subject ""]
 		recipients
 		body
@@ -104,7 +106,7 @@
 		"Class an email message, noticed that the html or the mkd param must be string"
 		(setv	self.sender (or sender "")
 			self.subject subject
-			self.reci (or recipients [])
+			self.recv (or recipients [])
 			self.body (or body "")
 			self.html (or html "")
 			self.mkd (or mkd "")
@@ -124,7 +126,7 @@
 	(defn as-bytes [self] (return (.as-bytes (._message self))))
 	(defn __str__ [self] (return (.as-string self)))
 	(defn __bytes__ [self] (return (.as-bytes self)))
-	(defn sned_to [self] (return (set self.reci)))
+	(defn sned_to [self] (return (set self.recv)))
 	(defn _message [self]
 		"Create the email"
 		(setv encode (or self.char "utf-8")) ; set the encoding
@@ -150,7 +152,7 @@
 
 		;; add from and to
 		(setv 	(get msg "From") (sanitize-address self.sender encode)
-			(get msg "To") (.join ", " (list (set (sanitize-addresses self.reci))))
+			(get msg "To") (.join ", " (list (set (sanitize-addresses self.recv))))
 			(get msg "Date") (formatdate self.date :localtime 1)
 			(get msg "Message-ID") self.msgID
 		)
@@ -176,6 +178,13 @@
 			(return (get self.sender 1))
 		)
 	))
+	(defn sendname [self val]
+		(setv self.sender (, val self.mail))
+	)
+	#@(property
+	(defn raw [self]
+		(return (.as-bytes self))
+	))
 )
 
 (defclass Connect []
@@ -196,7 +205,7 @@
 		(.login self.smtp mail passwd)
 	)
 	(defn send [self message]
-		(.sendmail self.smtp message.mail (set message.reci) (str message))
+		(.sendmail self.smtp message.mail (set message.recv) (str message))
 	)
 	(defn close [self]
 		(.close self.smtp)

@@ -1,8 +1,12 @@
 import os
+import time
 import codecs
 import email
+from threading import Thread
 
 from imapclient import IMAPClient
+import hy as __hy
+from .msgbase import MSG
 
 
 class Connect:
@@ -19,6 +23,18 @@ class Connect:
         self.mail, self.passwd = email if email else (None, None)
         self.folder = 'INBOX'
         self.ssl = ssl
+
+    def _noopthr(self):
+        def _innernoop():
+            while True:
+                time.sleep(2)
+                self.noop()
+        thr = Thread(target = _innernoop)
+        thr.setDaemon(True)
+        thr.start()
+
+    def _noop(self):
+        self.client.noop()
 
     def Client(self, imap=None, ssl=True, **kwargs):
         "Create and return IMAPClient instance, param imap is format in imap-host, imap-port, others for IMAPClient kwargs"
@@ -87,11 +103,12 @@ class Connect:
         self.quit()
 
 
-class Parse:
+class Parse(MSG):
     def __init__(self, from_bytes):
         "Read from the bytes"
         self.msg = email.message_from_bytes(from_bytes)
         self._con = []
+        self.raw = self.msg.as_bytes()
 
     def decode(self, con):
         head = email.header.Header(con)
@@ -109,6 +126,7 @@ class Parse:
             return bos.decode('utf-8')
         except:
             return bos
+
     @classmethod
     def _mc(cls,msg):
         "decode msg's content"
@@ -117,7 +135,7 @@ class Parse:
     def __getattr__(self, attr):
         try:
             return self.__dict__[attr]
-        except Exception as e:
+        except KeyError:
             return self.msg.get(attr, None)
 
     def get_con(self, msg=None):
@@ -163,8 +181,6 @@ class Parse:
         s = {}
         for attr in ['From', 'To', 'Cc', 'Subject']:
             s[attr] = self.decode(getattr(self, attr))
-        #self.get_con()
-        #s['con'] = self._con
         s['param'] = self.get_param()
         return s
 
@@ -194,10 +210,13 @@ class Parse:
                 s.append(File(name, msg.get_payload()))
             return s
 
+    def __str__(self):
+        return self.text + '\n\r\n\r' + self.body
+
 
 class File:
     "File class to save and read single file"
-    #__slots__ = ['write', 'bwrite', 'read', 'bread', 'name', 'encode', 'con', 'error', '__init__']
+    __slots__ = ['name', 'encode', 'con', 'error']
     def __init__(self, name, con='', encode=None):
         "init the file with the name and the con"
         self.name = os.path.abspath(str(name))

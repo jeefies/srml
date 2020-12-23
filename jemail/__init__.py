@@ -19,6 +19,7 @@ from .login import *
 from .main import *
 from .tk import root
 from .configs import *
+from .writer import *
 
 def _main():
     log = Login(globals())

@@ -48,7 +48,7 @@ class _UserConfig(tk.Frame):
             pwden['show'] = str() if pwden['show'] else '*'
         tk.Button(self, text='Show pwd', command = change).grid(row=4)
 
-        tk.Label(self).grid(row=5)
+        tk.Button(self, text="Logout", command = self.logout).grid(row=5)
 
         # submit
         btn = tk.Button(self, text = 'Submit', command=self.submit)
@@ -60,6 +60,12 @@ class _UserConfig(tk.Frame):
         cb.grid(row=6, column=1)
         nou = cb.select() if mails['remember'] == '1' else cb.deselect()
         self.rem = rem
+
+    def logout(self):
+        self.master.destroy()
+        mails['remember'] = '0'
+        config.update()
+        self.gls['Login'](self.gls)
 
     def submit(self):
         if self.pwd.get() == rpwd():
