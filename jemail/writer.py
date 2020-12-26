@@ -1,6 +1,10 @@
+import io
+import os
+from threading import Thread
+
 from . import tk, config
 
-__all__ = ("Writer",)
+__all__ = ("Writer", 'WriteFrame', 'RWriter')
 
 
 def Writer(gls, box):
@@ -13,13 +17,29 @@ def Writer(gls, box):
     wf.pack()
     top.mainloop()
 
+def RWriter(gls, msg, box):
+    root = tk.root
+    top = tk.Toplevel(root)
+    w, h = top.maxsize()
+    top.geometry(f'700x500+{w // 6}+{h // 6}')
+    top.resizable(0,0)
+    wf = WriteFrame(gls, top, box, msg)
+    wf.pack()
+    wf.from_()
+    top.mainloop()
+
 class WriteFrame(tk.Frame):
-    def __init__(self, gls, master, box):
+    def __init__(self, gls, master, box, msg=None):
         super().__init__(master)
+        self.gls = gls
         self.mst = master
         self.box = box
-        self.msg = box.createMessage()
+        self.msg = msg if msg else box.createMessage()
+        self.crt_menu()
         self.crt_items()
+        self.fts = (('JE mail file', '.Jml .Jmli .Jmln'.split()), ('TXT file', '.txt'),\
+                ('All File', '*'))
+        self.bind_all('<Control-o>', lambda e:self.open())
 
     def crt_items(self):
         # Concat show frame
@@ -58,6 +78,25 @@ class WriteFrame(tk.Frame):
         text.grid(row = 3, column = col - 3, columnspan = 2)
         self.ectx = text
 
+    def crt_menu(self):
+        m = self.master
+        mn = tk.Menu(m)
+
+        # File tearoff
+        fm = tk.Menu(mn, tearoff=0)
+        ac = fm.add_command
+        ac(label = 'Open', command = self.open)
+        ac(label = 'Save', command = self.save)
+        ac(label = 'New', command = self.new)
+        fm.add_separator()
+        ac(label = 'Exit', command = self.master.destroy)
+        mn.add_cascade(label = "File", menu=fm)
+
+        # Send command
+        mn.add_command(label = 'Send', command = self.send)
+
+        m.config(menu = mn)
+
     def add_cc(self, cc, v):
         if cc.val not in self.msg.recv:
             self.msg.recv.append(cc.val)
@@ -65,6 +104,28 @@ class WriteFrame(tk.Frame):
             self.msg.recv.remove(cc.val)
         self.erecv.iupdate()
         self.cc.iupdate()
+
+    def open(self):
+        name = tk.askopenfilename(parent = self, title='Open',\
+                filetypes = self.fts, initialdir = os.getcwd())
+        newmsg = self.msg.from_json(name)
+        RWriter(self.gls, newmsg, self.box)
+
+    def new(self):
+        Writer(self.gls, self.box)
+
+    def save(self):
+        self.prt()
+        f = io.StringIO()
+        self.msg.to_json(fp = f)
+        val = f.getvalue()
+        name = tk.asksaveasfilename(parent = self, title='Save',\
+                filetypes=self.fts, initialdir=os.getcwd())
+        if not name:
+            tk.showwarning("Save Error", "No file Select or Saved", parent = self)
+            return
+        with open(name, 'w') as f:
+            f.write(val)
 
     @property
     def ctx(self):
@@ -78,14 +139,25 @@ class WriteFrame(tk.Frame):
         msg.sendname(ename)
         msg.body = self.ctx
 
+    def from_(self):
+        msg = self.msg
+        self.subject.set(msg.subject)
+        self.ename.set(msg.sendname())
+        self.ectx.insert('0.0', msg.body)
+        self.erecv.iupdate()
+
     def send(self):
         self.prt()
-        try:
-            self.box.send(self.msg)
-        except:
-            self.box.update()
-            self.box.send(self.msg)
-        self.clear()
+        def _send():
+            try:
+                self.box.send(self.msg)
+            except:
+                self.box.update()
+                self.box.send(self.msg)
+            self.clear()
+        thr = Thread(target=_send)
+        thr.setDaemon(True)
+        thr.start()
 
     def clear(self):
         res = tk.askyesno('Sucess', 'Send Success!\nClear the Data?', parent = self.master)
@@ -143,8 +215,6 @@ class _Concats(tk.Frame):
             btns.append(btn)
             btn.grid(row = i + 1)
             btn.bind("<Button>", add(i, var))
-        btns.append(tk.Button(self, text = "Send", command = self.master.send))
-        btns[-1].grid(row = len(btns))
 
     def iupdate(self):
         for btn in self.btns:

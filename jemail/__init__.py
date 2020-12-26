@@ -20,6 +20,8 @@ from .main import *
 from .tk import root
 from .configs import *
 from .writer import *
+from .reader import *
+from .select import *
 
 def _main():
     log = Login(globals())

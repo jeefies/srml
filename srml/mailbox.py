@@ -3,7 +3,8 @@ A module to define the class named MailBox
 MailBox is a class to send and recieve the email messages.
 """
 import time
-from . import Message, SMTPConnect, IMAPConnect, POPConnect, Parse
+import copy
+from . import Smessage, SMTPConnect, IMAPConnect, POPConnect, Parse
 from smtplib import SMTPAuthenticationError
 
 
@@ -110,6 +111,7 @@ to modify the content of the message
             self.hosts['pop'], self.mails, self.ports['pop'], self.ssl)
         self.imap = IMAPConnect(
             self.hosts['imap'], self.mails, self.ports['imap'], self.ssl)
+        self.imap.client.id_({'name': 'IMAPClient', 'version': '2.1.0'})
         for pro in (self.smtp, self.pop, self.imap):
             try:
                 pro.login(*mails)
@@ -122,11 +124,12 @@ to modify the content of the message
         return bool(self._logined)
 
     def createMessage(self, name=None):
-        self.msg = Message()
+        self.msg = Smessage()
         sender = (name, self.mails[0]) if name else self.mails[0]
         # print(sender)
         self.msg.sender = sender
-        self.msg.date = time.time()  # time.strftime('%a, %d %b %Y %H:%M:%s')
+        self.msg._date = time.time()  # time.strftime('%a, %d %b %Y %H:%M:%s')
+        self.msg.char = 'utf-8'
         return self.msg
 
     def recentReceive(self):
@@ -151,7 +154,6 @@ to modify the content of the message
             yield (par.dict()['Subject'], par)
 
     def allSend(self):
-        self.imap.client.id_({'name': 'IMAPClient', 'version': '2.1.0'})
         self.imap.select_folder('已发送')
         if not hasattr(self, '_sduids'):
             self._sduids = self.imap.search('ALL')
@@ -165,5 +167,14 @@ to modify the content of the message
 
     def update(self):
         self.login()
+
+    def copy(self):
+        box = MailBox()
+        dc = copy.deepcopy
+        box.ports = dc(self.ports)
+        box.hosts = dc(self.hosts)
+        box.mails = dc(self.mails)
+        box.login()
+        return box
 
 class AuthenticationError(Exception): pass

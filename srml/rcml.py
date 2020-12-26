@@ -2,6 +2,7 @@ import os
 import time
 import codecs
 import email
+import copy
 from threading import Thread
 
 from imapclient import IMAPClient
@@ -24,17 +25,6 @@ class Connect:
         self.folder = 'INBOX'
         self.ssl = ssl
 
-    def _noopthr(self):
-        def _innernoop():
-            while True:
-                time.sleep(2)
-                self.noop()
-        thr = Thread(target = _innernoop)
-        thr.setDaemon(True)
-        thr.start()
-
-    def _noop(self):
-        self.client.noop()
 
     def Client(self, imap=None, ssl=True, **kwargs):
         "Create and return IMAPClient instance, param imap is format in imap-host, imap-port, others for IMAPClient kwargs"
@@ -63,9 +53,13 @@ class Connect:
             self.mail, self.passwd)
         return self.client.login(*user)
 
+    def update(self):
+        del self.cli
+        self.login()
+
     def list_folders(self):
         "return all folder's status and name"
-        return self.client
+        return self.client.list_folders()
 
     def close_folder(self):
         "close the currently select folder"
@@ -93,6 +87,9 @@ class Connect:
         "exit the client"
         self.client.logout()
         # self.client.shutdown()
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def __enter__(self):
         self.client()
@@ -125,7 +122,7 @@ class Parse(MSG):
         try:
             return bos.decode('utf-8')
         except:
-            return bos
+            return str(bos)
 
     @classmethod
     def _mc(cls,msg):
@@ -175,14 +172,19 @@ class Parse(MSG):
             return self._mc(msg)
         return get_main_text(main)
 
-    #@property
     def dict(self):
         "Return a dict of almost all info"
         s = {}
-        for attr in ['From', 'To', 'Cc', 'Subject']:
-            s[attr] = self.decode(getattr(self, attr))
+        for attr in ['From', 'To', 'Cc', 'Subject', 'Date']:
+            s[attr] = self._bs(self.decode(self.msg.get(attr, None)))
         s['param'] = self.get_param()
         return s
+
+    def jdict(self):
+        di = self.dict()
+        p = di['param']
+        di['param'] = [f.con for f in p]
+        return di
 
     def get_param(self, msg=None):
         "get Files"
@@ -217,12 +219,27 @@ class Parse(MSG):
 class File:
     "File class to save and read single file"
     __slots__ = ['name', 'encode', 'con', 'error']
-    def __init__(self, name, con='', encode=None):
+    def __init__(self, n, con='', encode='utf-8'):
         "init the file with the name and the con"
-        self.name = os.path.abspath(str(name))
-        self.encode = encode
-        self.con = con
+        if isinstance(n, File):
+            self.name = n.name
+            self.encode = n.encode
+            self.con = n.con
+        else:
+            self.name = os.path.abspath(str(n))
+            self.encode = encode
+            self.con = con
         self.error = 0
+        self.write()
+
+    def info(self):
+        return (self.name, self.encode, self.read())
+
+    def from_info(self, info):
+        self.name = info[0]
+        self.encode = info[1]
+        self.con = info[2]
+        return self
 
     def __repr__(self):
         return "<File {}>".format(self.name)

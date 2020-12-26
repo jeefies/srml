@@ -111,12 +111,30 @@
 			self.html (or html "")
 			self.mkd (or mkd "")
 			self.reply-to reply-to
-			self.date (or date (.time time))
+			self.-date (or date (.time time))
 			self.char charset
 			self.files (or files [])
 			self.msgID (make-msgid)
 		)
 		(.info logger "Message create")
+	)
+	(defn __eq__ [self o]
+		(if-not (isinstance o Message)
+			(return (.__eq__ (super) o)))
+		(setv s (set self.recv)
+			l (len self.recv)
+		)
+		(.update s o.recv)
+		(if-not (= s (len self.recv))
+			(return False)
+		)
+		(return (and (= self.sender o.sender)
+			(= self.subject o.subject)
+			(= self.body o.body)
+			(= self.html o.html)
+			(= self.mkd o.mkd)
+			(= self.-date o.-date)
+		))
 	)
 	(defn _mimetext [self text &optional [subtype "plain"]]
 		"create MIMEText class with the given subtype"
@@ -146,6 +164,7 @@
 			(.attach msg alter)
 		)))
 		;;(print self)
+		
 		;; add subject
 		(setv subject (sanitize-subject self.subject encode))
 		(setv (get msg "Subject") subject)
@@ -153,7 +172,7 @@
 		;; add from and to
 		(setv 	(get msg "From") (sanitize-address self.sender encode)
 			(get msg "To") (.join ", " (list (set (sanitize-addresses self.recv))))
-			(get msg "Date") (formatdate self.date :localtime 1)
+			(get msg "Date") self.date
 			(get msg "Message-ID") self.msgID
 		)
 		;; add reply context
@@ -162,11 +181,17 @@
 
 		;; add files
 		(for [file self.files]
-			(if-not file break)
+			(if-not file continue)
 			;;(print "add:" file)
-			(setv part (.application.MIMEApplication mime (.read (.open codecs file "rb"))))
-			(.add_header part "Content-Disposition" "attachment"
-				:filename (os.path.basename (os.path.abspath file)))
+			(if (isinstance file str)
+				(do (setv part (.application.MIMEApplication mime (.read (.open codecs file "rb"))))
+				(.add_header part "Content-Disposition" "attachment"
+				:filename (os.path.basename (os.path.abspath file))))
+			(do
+				(setv part (.application.MIMEApplication mime (get file 1)))
+				(.add_header part "Content-Disposition" "attachment"
+				:filename (get file 0))
+			))
 			(.attach msg part)
 		)
 		(return msg)
@@ -178,12 +203,25 @@
 			(return (get self.sender 1))
 		)
 	))
-	(defn sendname [self val]
-		(setv self.sender (, val self.mail))
+	(defn sendname [self &optional [val None]]
+		(if val
+			(setv self.sender (, val self.mail))
+			(if (isinstance self.sender str)
+				(return self.sender)
+				(return (get self.sender 0))
+			)
+		)
 	)
 	#@(property
 	(defn raw [self]
 		(return (.as-bytes self))
+	))
+	(defn to [self]
+		(.join ", " (list (set (sanitize-addresses self.recv))))
+	)
+	#@(property
+	(defn date [self]
+		(formatdate self.-date :localtime 1)
 	))
 )
 

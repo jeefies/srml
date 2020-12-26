@@ -15,18 +15,25 @@ class Main(tk.Frame):
         root = tk.root
         mw, mh = root.maxsize()
         root.geometry(f'{mw // 2}x{mh // 2}+{mw // 4}+{mh // 4}')
-
         self.create_menu()
-
-        self.pack()
         self.login()
+
+        
+        self.pack()
 
         self.sbind()
 
     def sbind(self):
         self.master.bind("<Control-n>", self.new)
         self.bind_all("<Control-t>", self.concats)
+        self.bind_all('<Control-i>', self.inbox)
         
+    def crt_items(self):
+        while not self.box._logined:
+            pass
+        self.F = self.gls['SelectFrame'](self.gls, self, self.box)
+        self.update()
+
     def create_menu(self):
         mainmenu = tk.Menu(self)
         
@@ -34,18 +41,10 @@ class Main(tk.Frame):
         filemn = tk.Menu(mainmenu, tearoff=0)
         af = filemn.add_command
         filemn.add_command(label = 'Open', command = self.askopen)
-        filemn.add_command(label = 'Save', command = self.save)
         af(label='New', command = self.new)
         filemn.add_separator()
         filemn.add_command(label = 'Exit', command = self.exit)
         mainmenu.add_cascade(label = 'File', menu=filemn)
-
-        # menu email
-        mailmn = tk.Menu(mainmenu, tearoff=0)
-        am = mailmn.add_command
-        am(label = 'Sended', command = self.sended)
-        am(label = 'Received', command = self.recved)
-        mainmenu.add_cascade(label = "Email", menu = mailmn)
 
         # menu config
         configmn = tk.Menu(mainmenu, tearoff=0)
@@ -61,6 +60,9 @@ class Main(tk.Frame):
 
         tk.root.config(menu = mainmenu)
         
+    def inbox(self, event):
+        self.F.inbox()
+
     def usage(self):
         pass
 
@@ -68,34 +70,24 @@ class Main(tk.Frame):
         pass
 
     def new(self, event = None):
-       self.gls['Writer'](self.gls, self.box)
-
-    def sended(self):
-        pass
+        self.gls['Writer'](self.gls, self.box)
 
     def concats(self, event=None):
         self.gls['ConcatConfig'](self.gls)
-
-    def recved(self):
-        pass
 
     def modify_con(self):
         self.gls['UserConfig'](self.gls)
         self.login()
         
     def askopen(self):
-        fts = (('JE mail file', '.Jml'), ('TXT File', '.txt'), ('ALL File', '*'))
+        fts = (('JE mail file', '.Jml .Jmli .Jmln'.split()), ('TXT File', '.txt'), ('ALL File', '*'))
         file = tk.askopenfilename(parent=self, title='jemail', \
                 initialdir=os.getcwd(), filetypes=fts)
         print(file)
         
     def exit(self):
-        self.pack_forget()
-        #self.master.desteroy()
+        self.master.destroy()
         
-    def save(self):
-        pass
-
     def login(self):
         self.box = MailBox(mails = config._login())
         def _login():
@@ -104,6 +96,14 @@ class Main(tk.Frame):
                 print('login success')
                 config.encrypt()
                 config.update()
+                self.crt_items()
+                def copy():
+                    self.copybox = MailBox(mails = config._login())
+                    self.copybox.login()
+                    self.box, self.copybox = self.copybox, self.box
+                thr = Thread(target = copy)
+                thr.setDaemon(True)
+                thr.start()
             except AuthenticationError:
                 tk.showwarning('PWD Error', 'Not the right password, please use imap/smtp/pop password.')
                 config.mails['remember'] = '0'

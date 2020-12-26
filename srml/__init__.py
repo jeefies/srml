@@ -17,5 +17,6 @@ from .sdml import Connect as SMTPConnect
 from .popclient import POPClient as POPConnect
 from .rcml import Connect as IMAPConnect
 from .rcml import Parse, File
+from .jml import Smessage
 from .mailbox import MailBox
 del hy
