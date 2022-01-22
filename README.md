@@ -1,7 +1,6 @@
 # srml
-**Author: Jeefy**  
-**Email: jeefy163@163.com**  
-**Url: [Github](https://github.com/jeefies/srml), [PyPI](https://pypi.org/project/srml)**
+**Author: Barret**  
+**Url: [Github](https://github.com/Boarderbarret/learn-email), [PyPI](https://pypi.org/project/srml)**
 
 -----------
 ## Connections
