@@ -6,7 +6,6 @@ import copy
 from threading import Thread
 
 from imapclient import IMAPClient
-import hy as __hy
 from .msgbase import MSG
 
 

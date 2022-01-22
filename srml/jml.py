@@ -22,7 +22,7 @@ class Smessage(Message):
     def dict(self):
         di = {'From': self.sender,
             'Subject': self.subject,
-            'To': self.to(),
+            'To': ", ".join(self.recv),
             'Body': self.body,
             'Html': self.html,
             'Mkd': self.mkd,
@@ -45,7 +45,7 @@ class Smessage(Message):
         self = Smessage()
         self.sender = tuple(d['From'])
         self.subject = d['Subject']
-        self.recv = [r for r in map(lambda x: x.strip(), d['To'].split(', ')) if r]
+        self.recv = [r for r in map(lambda x: x.strip(), d['To'].split(',')) if r]
         self.body = d['Body']
         self.html = d['Html']
         self.mkd = d['Mkd']

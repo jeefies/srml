@@ -15,9 +15,9 @@ def test_crmsg():
     global msg
     msg = box.createMessage('MyM-Box')
     msg.subject = 'TEST'
-    msg.body = '''
+    msg.body = """
 Hi, I'm testing the MailBox, if it's not Jeefy there, please don't use the test models
-    '''
+    """
     msg.mkd = """# Test
 *Notice*: you're testing the mailbox at {}.  
 If is not the test to your self, please close the program to avoid disturbing.  
@@ -27,11 +27,7 @@ If is not the test to your self, please close the program to avoid disturbing.
 
 def test_rec():
     rcmsg = box.recentReceive()
-    print(rcmsg)
-
-def test_rcs():
-    sdmsg = box.recentSend()
-    print(sdmsg)
+    # print(rcmsg)
 
 def testsend():
     rcsend = box.recentSend()
@@ -43,8 +39,20 @@ def test_update():
 
 def test_alls():
     for msg in box.allSend():
-        print(msg)
+        # print(msg)
+        pass
 
 def test_allr():
     for msg in box.allReceive():
-        print(msg)
+        # print(msg)
+        pass
+
+if __name__ == "__main__":
+    test_init()
+    test_crmsg()
+    test_rec()
+    testsend()
+    test_update()
+    test_alls()
+    test_allr()
+

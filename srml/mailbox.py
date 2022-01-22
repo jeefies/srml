@@ -98,6 +98,8 @@ to modify the content of the message
             for pre in self.hosts:
                 self.hosts[pre] = '{0}.{1}'.format(pre, ends)
 
+        print(self.mails)
+
     def login(self, mail=None, passwd=None):
         "Login for the mailbox"
         "if mail and passwd is not given,"

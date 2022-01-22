@@ -1,3 +1,2 @@
-hy
 imapclient
 markdown
