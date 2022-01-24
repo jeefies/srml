@@ -1,5 +1,5 @@
 # srml
-**Author: Barret**  
+**Author: [Barret](https://github.com/Boarderbarret), [Jeefies](https://github.com/jeefies)**  
 **Url: [Github](https://github.com/Boarderbarret/learn-email), [PyPI](https://pypi.org/project/srml)**
 
 -----------

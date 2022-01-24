@@ -1,6 +1,7 @@
-/**/__pycache__
-/*/__pycache__
-/*/*/__pycache__
-/__pycache__
-/jemail/config/config.*
-/**/.swp
+__pycache__
+*.pyc
+
+*.swp
+*.swo
+*~
+*.conf
