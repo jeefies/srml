@@ -2,7 +2,7 @@
 **Author: [Barret](https://github.com/Boarderbarret), [Jeefies](https://github.com/jeefies)**  
 **Url: [Github](https://github.com/Boarderbarret/learn-email), [PyPI](https://pypi.org/project/srml)**
 
------------
+- - -
 ## Connections
 
 ### SMTPConnect
@@ -49,7 +49,7 @@ See also srml.popclient.POPClient.
 Like poplib.POP or poplib.POP_SSL.
 more infomation, see [python standard library](https://docs.python.org/3/library/poplib.html)
 
--------------------
+- - -
 ## Parse
 Parse the MIME message according to the bytes in.  
 shown body see `Parse.body`.  
@@ -60,14 +60,24 @@ more see `Parse.dict`
 ### File
 A class help to save the file.
 
----------------------------------
+- - -
 ## MailBox
 **The mix class for all connection**  
 use `help(MailBox)` or `MailBox.__init__.__doc__` for more details.  
 
-------------------
+- - -
 ## srml.mailG
 the GUI version to use the email objects.  
 Use `python -m jemail` to show the GUI.  
 ## srml.mailCli
 The cli version to use the email objects.  
+
+- - -
+## Change Log
+2022.1.20:  
+	Add a repo to Boarderbarret, for cooperation.  
+	URL: [Boarderbarret/learn-email](https://github.com/Boarderbarret/learn-email)
+
+2022.1.23:  
+	Rewrite ALL hylang to python code  
+	By [Jeefies](https://github.com/jeefies)  
